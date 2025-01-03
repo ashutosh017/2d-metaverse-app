@@ -64,12 +64,12 @@ export class User {
               id: spaceId,
             },
           });
-          if (!spaceId) {
+          if (!space) {
             this.ws.close();
             return;
           }
           this.spaceId = space.id;
-          this.x = Math.floor(Math.random() * space.widhth);
+          this.x = Math.floor(Math.random() * space.width);
           this.y = Math.floor(Math.random() * space.height);
           // sending to the user that he/she has joined the space and these are the users present in that space already
           this.send({

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsc -db && node dist/index.js"
+    "build":"tsc -b"
   },
   "exports": {
     "./client": "./src/index.ts"

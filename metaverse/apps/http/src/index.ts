@@ -15,17 +15,19 @@ import jwt from "jsonwebtoken";
 import { jwt_secret } from "./config";
 
 const app = express();
+app.use(express.json())
 
 // (done) 1 signup
-app.post("api/v1/signup", async (req, res) => {
-  const { username, password, type } = req.body;
+app.post("/api/v1/signup", async (req, res) => {
   const parsedSchema = signupSchema.safeParse(req.body);
+  console.log("req.body: ",req.body);
   if (!parsedSchema.success) {
     res.status(400).json({
       msg: "validation faild",
     });
     return;
   }
+  const {username, password, type} = parsedSchema.data
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
     const user = await client.user.create({
@@ -126,12 +128,37 @@ app.post("/api/v1/user/metadata", async (req, res) => {
 app.get("api/v1/avatars", async (req, res) => {
   const avatars = await client.avatar.findMany();
   res.status(200).json({
-    avatars,
+    avatars:avatars.map((a:any)=>({
+      id:a.id,
+      name:a.name,
+      imageUrl:a.imageUrl
+    }))
   });
 });
 
-// (pending...) 5 Get other users metadata (name and avatarUrl)
-app.get("/api/v1/user/metadata/bulk?id", (req, res) => {});
+// (done) 5 Get other users metadata (name and avatarUrl)
+app.get("/api/v1/user/metadata/bulk?id", async(req, res) => {
+  const userIdString = (req.query.ids??"[]") as string
+  const userIdArray = userIdString.slice(1,userIdString.length-1).split(",");
+  const metadata = await client.user.findMany({
+    where:{
+      id:{
+        in:userIdArray
+      }
+    },
+    select:{
+      avatarId:true,
+      id:true
+    }
+  })
+  res.json({
+    avatars:metadata.map((m:any)=>({
+      userId:m.id,
+      avatarId:m.avatarId
+    }))
+  })
+  
+});
 
 // ************** Space dashboard ****************
 
